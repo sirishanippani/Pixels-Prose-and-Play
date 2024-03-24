@@ -28,7 +28,7 @@ export default function Header() {
             <FaRegMoon />
           </Button>
           <Link to='/login'>
-            <Button gradientDuoTone='purpleToPink'>
+            <Button gradientDuoTone='purpleToBlue' outline>
               Sign In
             </Button>
           </Link>
