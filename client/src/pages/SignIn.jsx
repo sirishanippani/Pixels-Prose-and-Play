@@ -3,30 +3,28 @@ import { Link, useNavigate } from 'react-router-dom'
 import Logo from '../assets/Watermark.png'
 import { Label, TextInput, Button, Alert, Spinner } from 'flowbite-react'
 import { useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { loginStart, loginSucess, loginFailure } from '../redux/user/userSlice'
 
 export default function login() {
   const [formData, setFormData] = useState({})
+  const dispatch = useDispatch()
+  const { error: errorMessage, loading } = useSelector((state) => state.user)
+  const navigate = useNavigate();
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.id]: e.target.value.trim()
     })
   }
-  
-  const navigate = useNavigate();
-
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (!formData.email || !formData.password) {
-      setError('Please fill all details.')
-      return
+      return dispatch(loginFailure('Please fill all details.'))
     }
     try {
-      setLoading(true)
-      setError(null)
+      dispatch(loginStart())
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
@@ -36,17 +34,16 @@ export default function login() {
       })
       const data = await response.json()
       if (response.ok) {
+        dispatch(loginSucess(data))
         navigate('/');
       }
       if (data.success === false) {
-        return setError(data.message)
+        dispatch(loginFailure(data.message))
       }
-      setLoading(false)
       console.log(data)
     } catch (error) {
       console.log(error)
-      setError(error.message)
-      setLoading(false)
+      dispatch(loginFailure(error.message))
     }
   }
 
@@ -93,9 +90,9 @@ export default function login() {
             <span>Don't have an account?</span>
             <Link to="/signUp" className='text-blue-500'>Join the Madness!</Link>
           </div>
-          {error && (
+          {errorMessage && (
             <Alert color="failure" dismissible={true}>
-              {error}
+              {errorMessage}
             </Alert>
             )}
         </di>
